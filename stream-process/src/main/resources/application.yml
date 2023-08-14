@@ -1,0 +1,17 @@
+kafka-server: localhost:9092
+spring:
+  neo4j:
+    authentication:
+      username: neo4j
+    uri: bolt://localhost:7687
+  profiles:
+    active: local, dev, qa, prod, test
+  main: 
+    banner-mode: off
+  application:
+    name: stream-process
+  kafka:
+    template:
+      default-topic: test
+    bootstrap-servers:
+    - ${kafka-server}
