@@ -20,60 +20,58 @@ import com.luchavor.datamodel.artifact.test.TestArtifact;
 @EnableKafka
 @Configuration
 public class KafkaConfig {
-	
+
 	@Value("${kafka-server}")
 	private String kafkaServer;
-	
+
 	// zeek group id for events
 	private String groupId = "zeek";
-	
+
 	// tag::testArtifact[]
 	@Bean
-    ConsumerFactory<String, TestArtifact> testArtifactConsumerFactory()
-    {
-        Map<String, Object> config = new HashMap<>();
-        // set configuration settings
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        // return json format of message
-        return new DefaultKafkaConsumerFactory<> (
-            config, new StringDeserializer(), new JsonDeserializer<>(TestArtifact.class));
-    }
-	
+	ConsumerFactory<String, TestArtifact> testArtifactConsumerFactory() {
+		Map<String, Object> config = new HashMap<>();
+		// set configuration settings
+		config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+		config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+		// return json format of message
+		return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(),
+				new JsonDeserializer<>(TestArtifact.class));
+	}
+
 	@Bean
-    ConcurrentKafkaListenerContainerFactory<String, TestArtifact> testArtifactListener() {
-        ConcurrentKafkaListenerContainerFactory<String, TestArtifact> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        // set consumer factory
-        factory.setConsumerFactory(testArtifactConsumerFactory());
-        // return factory                                           
-        return factory;
-    }
+	ConcurrentKafkaListenerContainerFactory<String, TestArtifact> testArtifactListener() {
+		ConcurrentKafkaListenerContainerFactory<String, TestArtifact> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		// set consumer factory
+		factory.setConsumerFactory(testArtifactConsumerFactory());
+		// return factory
+		return factory;
+	}
 	// end::testArtifact[]
-	
+
 	// tag::observedHost[]
 	@Bean
-    ConsumerFactory<String, ObservedHost> observedHostConsumerFactory()
-    {
-        Map<String, Object> config = new HashMap<>();
-        // set configuration settings
-        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        // return json format of message
-        return new DefaultKafkaConsumerFactory<> (
-            config, new StringDeserializer(), new JsonDeserializer<>(ObservedHost.class));
-    }
-		
+	ConsumerFactory<String, ObservedHost> observedHostConsumerFactory() {
+		Map<String, Object> config = new HashMap<>();
+		// set configuration settings
+		config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+		config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+		config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+		// return json format of message
+		return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(),
+				new JsonDeserializer<>(ObservedHost.class));
+	}
+
 	@Bean
-    ConcurrentKafkaListenerContainerFactory<String, ObservedHost> observedHostListener() {
-        ConcurrentKafkaListenerContainerFactory<String, ObservedHost> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        // set consumer factory
-        factory.setConsumerFactory(observedHostConsumerFactory());
-        // return factory                                           
-        return factory;
-    }
+	ConcurrentKafkaListenerContainerFactory<String, ObservedHost> observedHostListener() {
+		ConcurrentKafkaListenerContainerFactory<String, ObservedHost> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		// set consumer factory
+		factory.setConsumerFactory(observedHostConsumerFactory());
+		// return factory
+		return factory;
+	}
 	// end::observedHost[]
 }
