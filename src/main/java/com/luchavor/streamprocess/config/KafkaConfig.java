@@ -1,4 +1,4 @@
-package com.luchavor.streamprocess;
+package com.luchavor.streamprocess.config;
 
 import java.util.HashMap;
 import java.util.Map;
