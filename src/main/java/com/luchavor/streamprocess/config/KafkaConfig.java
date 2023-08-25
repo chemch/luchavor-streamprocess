@@ -14,8 +14,8 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHost;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
+import com.luchavor.streamprocess.model.ImportedObservedHost;
 
 @EnableKafka
 @Configuration
@@ -53,7 +53,7 @@ public class KafkaConfig {
 
 	// tag::observedHost[]
 	@Bean
-	ConsumerFactory<String, ObservedHost> observedHostConsumerFactory() {
+	ConsumerFactory<String, ImportedObservedHost> observedHostConsumerFactory() {
 		Map<String, Object> config = new HashMap<>();
 		// set configuration settings
 		config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
@@ -62,12 +62,12 @@ public class KafkaConfig {
 		config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 		// return json format of message
 		return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(),
-				new JsonDeserializer<>(ObservedHost.class));
+				new JsonDeserializer<>(ImportedObservedHost.class));
 	}
 
 	@Bean
-	ConcurrentKafkaListenerContainerFactory<String, ObservedHost> observedHostListener() {
-		ConcurrentKafkaListenerContainerFactory<String, ObservedHost> factory = new ConcurrentKafkaListenerContainerFactory<>();
+	ConcurrentKafkaListenerContainerFactory<String, ImportedObservedHost> observedHostListener() {
+		ConcurrentKafkaListenerContainerFactory<String, ImportedObservedHost> factory = new ConcurrentKafkaListenerContainerFactory<>();
 		// set consumer factory
 		factory.setConsumerFactory(observedHostConsumerFactory());
 		// return factory
