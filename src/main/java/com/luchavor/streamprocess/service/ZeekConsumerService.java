@@ -6,12 +6,14 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.luchavor.datamodel.artifact.Artifact;
+import com.luchavor.datamodel.artifact.network.observation.observedfile.ObservedFile;
 import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHost;
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.datamodel.factory.ArtifactFactory;
 import com.luchavor.neo4japi.dao.ArtifactDao;
 import com.luchavor.streamprocess.converter.ImportedConverter;
+import com.luchavor.streamprocess.model.ImportedObservedFile;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
 import com.luchavor.streamprocess.model.ImportedObservedService;
 
@@ -39,16 +41,23 @@ public class ZeekConsumerService {
 	}
 	
 	@KafkaListener(topics="known_hosts", groupId = "zeek", containerFactory = "observedHostListener")
-	void handle(ImportedObservedHost importedObservedHost) {
-		log.info(importedObservedHost.toString());
-		Artifact<ObservedHost> artifact = artifactFactory.create(importedConverter.convert(importedObservedHost));
+	void handle(ImportedObservedHost imported) {
+		log.info(imported.toString());
+		Artifact<ObservedHost> artifact = artifactFactory.create(importedConverter.convert(imported));
 		artifactDao.save(artifact);
 	}
 	
 	@KafkaListener(topics="known_services", groupId = "zeek", containerFactory = "observedServiceListener")
-	void handle(ImportedObservedService importedObservedService) {
-		log.info(importedObservedService.toString());
-		Artifact<ObservedService> artifact = artifactFactory.create(importedConverter.convert(importedObservedService));
+	void handle(ImportedObservedService imported) {
+		log.info(imported.toString());
+		Artifact<ObservedService> artifact = artifactFactory.create(importedConverter.convert(imported));
+		artifactDao.save(artifact);
+	}
+	
+	@KafkaListener(topics="files", groupId = "zeek", containerFactory = "observedFileListener")
+	void handle(ImportedObservedFile imported) {
+		log.info(imported.toString());
+		Artifact<ObservedFile> artifact = artifactFactory.create(importedConverter.convert(imported));
 		artifactDao.save(artifact);
 	}
 }
