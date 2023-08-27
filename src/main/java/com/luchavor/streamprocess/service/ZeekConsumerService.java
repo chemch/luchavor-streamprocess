@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 
 import com.luchavor.datamodel.artifact.Artifact;
 import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHost;
+import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.datamodel.factory.ArtifactFactory;
 import com.luchavor.neo4japi.dao.ArtifactDao;
 import com.luchavor.streamprocess.converter.ImportedConverter;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
+import com.luchavor.streamprocess.model.ImportedObservedService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,10 +38,17 @@ public class ZeekConsumerService {
 		log.info(testArtifact.toString());
 	}
 	
-	@KafkaListener(topics="observed-host", groupId = "zeek", containerFactory = "observedHostListener")
+	@KafkaListener(topics="known_hosts", groupId = "zeek", containerFactory = "observedHostListener")
 	void handle(ImportedObservedHost importedObservedHost) {
 		log.info(importedObservedHost.toString());
 		Artifact<ObservedHost> artifact = artifactFactory.create(importedConverter.convert(importedObservedHost));
+		artifactDao.save(artifact);
+	}
+	
+	@KafkaListener(topics="known_services", groupId = "zeek", containerFactory = "observedServiceListener")
+	void handle(ImportedObservedService importedObservedService) {
+		log.info(importedObservedService.toString());
+		Artifact<ObservedService> artifact = artifactFactory.create(importedConverter.convert(importedObservedService));
 		artifactDao.save(artifact);
 	}
 }
