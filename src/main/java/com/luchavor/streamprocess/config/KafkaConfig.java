@@ -18,6 +18,7 @@ import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
 import com.luchavor.streamprocess.model.ImportedObservedService;
+import com.luchavor.streamprocess.model.ImportedSoftware;
 
 @EnableKafka
 @Configuration
@@ -124,4 +125,28 @@ public class KafkaConfig {
 		return factory;
 	}
 	// end::observedFile[]
+	
+	// tag::software[]
+		@Bean
+		ConsumerFactory<String, ImportedSoftware> softwareConsumerFactory() {
+			Map<String, Object> config = new HashMap<>();
+			// set configuration settings
+			config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+			config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+			config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+			config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+			// return json format of message
+			return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(),
+					new JsonDeserializer<>(ImportedSoftware.class));
+		}
+
+		@Bean
+		ConcurrentKafkaListenerContainerFactory<String, ImportedSoftware> softwareListener() {
+			ConcurrentKafkaListenerContainerFactory<String, ImportedSoftware> factory = new ConcurrentKafkaListenerContainerFactory<>();
+			// set consumer factory
+			factory.setConsumerFactory(softwareConsumerFactory());
+			// return factory
+			return factory;
+		}
+		// end::software[]
 }

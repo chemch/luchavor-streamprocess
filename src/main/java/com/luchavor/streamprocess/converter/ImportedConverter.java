@@ -9,11 +9,14 @@ import com.luchavor.datamodel.artifact.network.observation.observedhost.Observed
 import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHostImpl;
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedServiceImpl;
+import com.luchavor.datamodel.artifact.network.observation.software.Software;
+import com.luchavor.datamodel.artifact.network.observation.software.SoftwareImpl;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.datamodel.util.FieldTypeConverter;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
 import com.luchavor.streamprocess.model.ImportedObservedService;
+import com.luchavor.streamprocess.model.ImportedSoftware;
 import com.luchavor.streamprocess.model.ImportedTestArtifact;
 
 @Component
@@ -65,6 +68,16 @@ public class ImportedConverter {
 		converted.setPort(imported.getPort_num());
 		converted.setNetworkProtocolType(NetworkProtocolType.valueOf(imported.getPort_proto().toUpperCase()));
 		converted.setServices(imported.getService());
+		return converted;
+	}
+	
+	public Software convert(ImportedSoftware imported) {
+		Software converted = new SoftwareImpl();
+		converted.setTimestamp(FieldTypeConverter.convertLongEpochTimestamp(imported.getTs()));
+		converted.setHostIp(imported.getHost());
+		converted.setAdditionalVersionInfo(imported.getUnparsed_version());
+		converted.setMajorVersion(imported.getMajor_version());
+		converted.setMinorVersion(imported.getMinor_version());
 		return converted;
 	}
 	
