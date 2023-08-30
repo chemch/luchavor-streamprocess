@@ -10,10 +10,12 @@ import com.luchavor.datamodel.artifact.network.observation.observedfile.Observed
 import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHost;
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.network.observation.software.Software;
+import com.luchavor.datamodel.artifact.network.session.Session;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.datamodel.factory.ArtifactFactory;
 import com.luchavor.neo4japi.dao.ArtifactDao;
 import com.luchavor.streamprocess.converter.ImportedConverter;
+import com.luchavor.streamprocess.model.ImportedConnection;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
 import com.luchavor.streamprocess.model.ImportedObservedService;
@@ -67,6 +69,13 @@ public class ZeekConsumerService {
 	void handle(ImportedSoftware imported) {
 		log.info(imported.toString());
 		Artifact<Software> artifact = artifactFactory.create(importedConverter.convert(imported));
+		artifactDao.save(artifact);
+	}
+	
+	@KafkaListener(topics="connection", groupId = "zeek", containerFactory = "connectionListener")
+	void handle(ImportedConnection imported) {
+		log.info(imported.toString());
+		Artifact<Session> artifact = artifactFactory.create(importedConverter.convert(imported));
 		artifactDao.save(artifact);
 	}
 }

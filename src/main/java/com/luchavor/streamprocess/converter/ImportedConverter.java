@@ -11,13 +11,14 @@ import com.luchavor.datamodel.artifact.network.observation.observedservice.Obser
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedServiceImpl;
 import com.luchavor.datamodel.artifact.network.observation.software.Software;
 import com.luchavor.datamodel.artifact.network.observation.software.SoftwareImpl;
-import com.luchavor.datamodel.artifact.test.TestArtifact;
+import com.luchavor.datamodel.artifact.network.session.connection.Connection;
+import com.luchavor.datamodel.artifact.network.session.connection.ConnectionImpl;
 import com.luchavor.datamodel.util.FieldTypeConverter;
+import com.luchavor.streamprocess.model.ImportedConnection;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
 import com.luchavor.streamprocess.model.ImportedObservedService;
 import com.luchavor.streamprocess.model.ImportedSoftware;
-import com.luchavor.streamprocess.model.ImportedTestArtifact;
 
 @Component
 public class ImportedConverter {
@@ -81,7 +82,34 @@ public class ImportedConverter {
 		return converted;
 	}
 	
-	public TestArtifact convert(ImportedTestArtifact imported) {
-		return new TestArtifact();
+	public Connection convert(ImportedConnection imported) {
+		Connection converted = new ConnectionImpl();
+		converted.setTimestamp(FieldTypeConverter.convertLongEpochTimestamp(imported.getTs()));
+		converted.setCuid(imported.getUid());
+		converted.setOriginatorIp(imported.getOrig_h());
+		converted.setResponderIp(imported.getResp_h());
+		converted.setOriginatorPort(imported.getOrig_p());
+		converted.setResponderPort(imported.getResp_p());
+		converted.setNetworkProtocolType(NetworkProtocolType.valueOf(imported.getProto().toUpperCase()));
+		converted.setService(imported.getService());
+		converted.setDuration(imported.getDuration());
+		converted.setOriginatorPayloadByteCount(imported.getOrig_bytes());
+		converted.setResponderPayloadByteCount(imported.getResp_bytes());
+		converted.setConnectionState(imported.getConn_state());
+		converted.setLocalOriginatorFlag(imported.getLocal_orig());
+		converted.setLocalResponderFlag(imported.getLocal_resp());
+		converted.setMissedByteCount(imported.getMissed_bytes());
+		converted.setStateHistory(imported.getHistory());
+		converted.setOriginatorPacketCount(imported.getOrig_pkts());
+		converted.setOriginatorTotalByteCount(imported.getOrig_ip_bytes());
+		converted.setResponderPacketCount(imported.getResp_pkts());
+		converted.setResponderTotalByteCount(imported.getResp_ip_bytes());
+		converted.setParentTunnelUid(imported.getTunnel_parents());
+		converted.setCommunityId(imported.getCommunity_id());
+		converted.setVlan(imported.getVlan());
+		converted.setInnerVlan(imported.getInner_vlan());
+		converted.setOriginatorMacAddress(imported.getOrig_l2_addr());
+		converted.setResponderMacAddress(imported.getResp_l2_addr());
+		return converted;
 	}
 }
