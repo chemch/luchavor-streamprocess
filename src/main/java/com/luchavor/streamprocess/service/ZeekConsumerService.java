@@ -14,6 +14,7 @@ import com.luchavor.datamodel.artifact.network.session.Session;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.datamodel.factory.ArtifactFactory;
 import com.luchavor.neo4japi.dao.ArtifactDao;
+import com.luchavor.neo4japi.persistence.artifact.network.observation.ObservedHostRepo;
 import com.luchavor.streamprocess.converter.ImportedConverter;
 import com.luchavor.streamprocess.model.ImportedConnection;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
@@ -39,6 +40,9 @@ public class ZeekConsumerService {
 	@Autowired
 	ArtifactFactory artifactFactory;
 	
+	@Autowired 
+	ObservedHostRepo observedHostRepo;
+	
 	@KafkaListener(topics="test", groupId = "zeek", containerFactory = "testArtifactListener")
 	void handle(TestArtifact testArtifact) {
 		log.info(testArtifact.toString());
@@ -47,8 +51,10 @@ public class ZeekConsumerService {
 	@KafkaListener(topics="known_hosts", groupId = "zeek", containerFactory = "observedHostListener")
 	void handle(ImportedObservedHost imported) {
 		log.info(imported.toString());
-		Artifact<ObservedHost> artifact = artifactFactory.create(importedConverter.convert(imported));
-		artifactDao.save(artifact);
+		if(!observedHostRepo.findByHostIp(imported.getHost()).isPresent()) {
+			Artifact<ObservedHost> artifact = artifactFactory.create(importedConverter.convert(imported));
+			artifactDao.save(artifact);
+		}
 	}
 	
 	@KafkaListener(topics="known_services", groupId = "zeek", containerFactory = "observedServiceListener")
