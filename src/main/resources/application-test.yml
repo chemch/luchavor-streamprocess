@@ -1,6 +1,16 @@
 server:
   port: 12005
 spring:
+  boot:
+    admin:
+      client:
+        instance:
+          management-base-url: http://localhost:${server.port}
+          service-base-url: http://localhost:${server.port}
+        url: http://localhost:12000
   neo4j:
     authentication:
       password: 31A1fZZHynvY&mU%
+logging:
+  level:
+    root: INFO      

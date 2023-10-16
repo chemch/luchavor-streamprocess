@@ -1,5 +1,7 @@
 package com.luchavor.streamprocess.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.luchavor.datamodel.artifact.Artifact;
 import com.luchavor.datamodel.artifact.network.observation.observedfile.ObservedFile;
 import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHost;
+import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHostImpl;
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.network.observation.software.Software;
 import com.luchavor.datamodel.artifact.network.session.Session;
@@ -15,6 +18,7 @@ import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.datamodel.factory.ArtifactFactory;
 import com.luchavor.neo4japi.dao.ArtifactDao;
 import com.luchavor.neo4japi.persistence.artifact.network.observation.ObservedHostRepo;
+import com.luchavor.neo4japi.persistence.artifact.network.observation.ServiceRepo;
 import com.luchavor.streamprocess.converter.ImportedConverter;
 import com.luchavor.streamprocess.model.ImportedConnection;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
@@ -43,25 +47,42 @@ public class ZeekConsumerService {
 	@Autowired 
 	ObservedHostRepo observedHostRepo;
 	
-	@KafkaListener(topics="test", groupId = "zeek", containerFactory = "testArtifactListener")
+	@Autowired
+	ServiceRepo serviceRepo;
+	
+	static final String WARN_DUPLICATE_FOUND = "DUPLICATE DETECTED: SKIPPING...\n";
+	
+	@KafkaListener(topics="tests", groupId = "zeek", containerFactory = "testArtifactListener")
 	void handle(TestArtifact testArtifact) {
 		log.info(testArtifact.toString());
 	}
 	
-	@KafkaListener(topics="known_hosts", groupId = "zeek", containerFactory = "observedHostListener")
+	@KafkaListener(topics="hosts", groupId = "zeek", containerFactory = "observedHostListener")
 	void handle(ImportedObservedHost imported) {
 		log.info(imported.toString());
-		if(!observedHostRepo.findByHostIp(imported.getHost()).isPresent()) {
+		Optional<ObservedHost> existing = observedHostRepo.findByHostIp(imported.getHost());
+		// add if non-existant
+		if(!existing.isPresent()) {
 			Artifact<ObservedHost> artifact = artifactFactory.create(importedConverter.convert(imported));
 			artifactDao.save(artifact);
 		}
+		else { // TODO enable updating of existing objects
+			log.warn(WARN_DUPLICATE_FOUND + imported.toString());
+		}
 	}
 	
-	@KafkaListener(topics="known_services", groupId = "zeek", containerFactory = "observedServiceListener")
+	@KafkaListener(topics="services", groupId = "zeek", containerFactory = "observedServiceListener")
 	void handle(ImportedObservedService imported) {
 		log.info(imported.toString());
-		Artifact<ObservedService> artifact = artifactFactory.create(importedConverter.convert(imported));
-		artifactDao.save(artifact);
+		Optional<ObservedService> existing = serviceRepo.findByServicesAndHostIp(imported.getService(), imported.getHost());
+		// add if non-existant
+		if(!existing.isPresent()) {
+			Artifact<ObservedService> artifact = artifactFactory.create(importedConverter.convert(imported));
+			artifactDao.save(artifact);
+		}
+		else { // TODO enable updating of existing objects
+			log.warn(WARN_DUPLICATE_FOUND + imported.toString());
+		}
 	}
 	
 	@KafkaListener(topics="files", groupId = "zeek", containerFactory = "observedFileListener")
@@ -78,7 +99,7 @@ public class ZeekConsumerService {
 		artifactDao.save(artifact);
 	}
 	
-	@KafkaListener(topics="connection", groupId = "zeek", containerFactory = "connectionListener")
+	@KafkaListener(topics="connections", groupId = "zeek", containerFactory = "connectionListener")
 	void handle(ImportedConnection imported) {
 		log.info(imported.toString());
 		Artifact<Session> artifact = artifactFactory.create(importedConverter.convert(imported));
