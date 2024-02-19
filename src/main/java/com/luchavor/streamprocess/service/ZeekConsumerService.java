@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.luchavor.datamodel.artifact.Artifact;
 import com.luchavor.datamodel.artifact.network.observation.observedfile.ObservedFile;
 import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHost;
-import com.luchavor.datamodel.artifact.network.observation.observedhost.ObservedHostImpl;
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.network.observation.software.Software;
 import com.luchavor.datamodel.artifact.network.session.Session;
