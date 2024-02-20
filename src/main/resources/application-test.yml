@@ -1,5 +1,5 @@
 server:
-  port: 12005
+  port: 12009
 spring:
   boot:
     admin:
