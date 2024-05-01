@@ -13,11 +13,15 @@ import com.luchavor.datamodel.artifact.network.observation.observedhost.Observed
 import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.network.observation.software.Software;
 import com.luchavor.datamodel.artifact.network.session.Session;
+import com.luchavor.datamodel.artifact.network.session.connection.Connection;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.datamodel.factory.ArtifactFactory;
 import com.luchavor.neo4japi.dao.ArtifactDao;
+import com.luchavor.neo4japi.persistence.artifact.network.observation.ObservedFileRepo;
 import com.luchavor.neo4japi.persistence.artifact.network.observation.ObservedHostRepo;
 import com.luchavor.neo4japi.persistence.artifact.network.observation.ServiceRepo;
+import com.luchavor.neo4japi.persistence.artifact.network.observation.SoftwareRepo;
+import com.luchavor.neo4japi.persistence.artifact.network.session.ConnectionRepo;
 import com.luchavor.streamprocess.converter.ImportedConverter;
 import com.luchavor.streamprocess.model.ImportedConnection;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
@@ -47,7 +51,16 @@ public class ZeekConsumerService {
 	ObservedHostRepo observedHostRepo;
 	
 	@Autowired
+	ObservedFileRepo observedFileRepo;
+	
+	@Autowired
+	SoftwareRepo softwareRepo;
+	
+	@Autowired
 	ServiceRepo serviceRepo;
+	
+	@Autowired
+	ConnectionRepo connectionRepo;
 	
 	static final String WARN_DUPLICATE_FOUND = "DUPLICATE DETECTED: SKIPPING...\n";
 	
@@ -66,7 +79,7 @@ public class ZeekConsumerService {
 			artifactDao.save(artifact);
 		}
 		else { // TODO enable updating of existing objects
-			log.warn(WARN_DUPLICATE_FOUND + imported.toString());
+			log.warn(WARN_DUPLICATE_FOUND + imported.getClass().getSimpleName() + ":\n " + imported.toString());
 		}
 	}
 	
@@ -80,28 +93,46 @@ public class ZeekConsumerService {
 			artifactDao.save(artifact);
 		}
 		else { // TODO enable updating of existing objects
-			log.warn(WARN_DUPLICATE_FOUND + imported.toString());
+			log.warn(WARN_DUPLICATE_FOUND + imported.getClass().getSimpleName() + ":\n " + imported.toString());
 		}
 	}
 	
 	@KafkaListener(topics="files", groupId = "zeek", containerFactory = "observedFileListener")
 	void handle(ImportedObservedFile imported) {
 		log.info(imported.toString());
-		Artifact<ObservedFile> artifact = artifactFactory.create(importedConverter.convert(imported));
-		artifactDao.save(artifact);
+		Optional<ObservedFile> existing = observedFileRepo.findByFuid(imported.getFuid());
+		if(!existing.isPresent()) {
+			Artifact<ObservedFile> artifact = artifactFactory.create(importedConverter.convert(imported));
+			artifactDao.save(artifact);
+		}
+		else { // TODO enable updating of existing objects
+			log.warn(WARN_DUPLICATE_FOUND + imported.getClass().getSimpleName() + ":\n " + imported.toString());
+		}
 	}
 	
 	@KafkaListener(topics="software", groupId = "zeek", containerFactory = "softwareListener")
 	void handle(ImportedSoftware imported) {
 		log.info(imported.toString());
-		Artifact<Software> artifact = artifactFactory.create(importedConverter.convert(imported));
-		artifactDao.save(artifact);
+		Optional<Software> existing = softwareRepo.findByNameAndHostIp(imported.getName(), imported.getHost());
+		if(!existing.isPresent()) {
+			Artifact<Software> artifact = artifactFactory.create(importedConverter.convert(imported));
+			artifactDao.save(artifact);
+		}
+		else { // TODO enable updating of existing objects
+			log.warn(WARN_DUPLICATE_FOUND + imported.getClass().getSimpleName() + ":\n " + imported.toString());
+		}
 	}
 	
 	@KafkaListener(topics="connections", groupId = "zeek", containerFactory = "connectionListener")
 	void handle(ImportedConnection imported) {
 		log.info(imported.toString());
-		Artifact<Session> artifact = artifactFactory.create(importedConverter.convert(imported));
-		artifactDao.save(artifact);
+		Optional<Connection> existing = connectionRepo.findByCommunityId(imported.getCommunity_id());
+		if(!existing.isPresent()) {
+			Artifact<Session> artifact = artifactFactory.create(importedConverter.convert(imported));
+			artifactDao.save(artifact);
+		}
+		else { // TODO enable updating of existing objects
+			log.warn(WARN_DUPLICATE_FOUND + imported.getClass().getSimpleName() + ":\n " + imported.toString());
+		}
 	}
 }

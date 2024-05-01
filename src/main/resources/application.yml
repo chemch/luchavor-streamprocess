@@ -1,4 +1,4 @@
-kafka-server: localhost:9092
+kafka-server: 172.23.250.132:9092
 spring:
   neo4j:
     authentication:
@@ -12,6 +12,6 @@ spring:
     name: stream-process
   kafka:
     template:
-      default-topic: test
+      default-topic: tests
     bootstrap-servers:
     - ${kafka-server}

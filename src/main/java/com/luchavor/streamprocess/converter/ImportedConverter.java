@@ -76,6 +76,7 @@ public class ImportedConverter {
 		Software converted = new SoftwareImpl();
 		converted.setTimestamp(FieldTypeConverter.convertLongEpochTimestamp(imported.getTs()));
 		converted.setHostIp(imported.getHost());
+		converted.setName(imported.getName());
 		converted.setAdditionalVersionInfo(imported.getUnparsed_version());
 		converted.setMajorVersion(imported.getMajor_version());
 		converted.setMinorVersion(imported.getMinor_version());
