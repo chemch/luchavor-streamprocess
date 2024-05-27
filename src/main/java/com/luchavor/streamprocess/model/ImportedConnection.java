@@ -40,6 +40,4 @@ public class ImportedConnection {
 	private Integer inner_vlan;
 	private String orig_l2_addr;
 	private String resp_l2_addr;
-
-	
 }

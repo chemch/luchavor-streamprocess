@@ -13,8 +13,12 @@ import com.luchavor.datamodel.artifact.network.observation.software.Software;
 import com.luchavor.datamodel.artifact.network.observation.software.SoftwareImpl;
 import com.luchavor.datamodel.artifact.network.session.connection.Connection;
 import com.luchavor.datamodel.artifact.network.session.connection.ConnectionImpl;
+import com.luchavor.datamodel.artifact.network.session.modbus.ModbusEvent;
+import com.luchavor.datamodel.artifact.network.session.modbus.ModbusEventImpl;
+import com.luchavor.datamodel.artifact.network.session.modbus.PduType;
 import com.luchavor.datamodel.util.FieldTypeConverter;
 import com.luchavor.streamprocess.model.ImportedConnection;
+import com.luchavor.streamprocess.model.ImportedModbusEvent;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
 import com.luchavor.streamprocess.model.ImportedObservedService;
@@ -30,10 +34,32 @@ public class ImportedConverter {
 		return converted;
 	}
 	
+	public ModbusEvent convert(ImportedModbusEvent imported) {
+		ModbusEvent converted = new ModbusEventImpl();
+		converted.setTimestamp(FieldTypeConverter.convertLongEpochTimestamp(imported.getTs()));
+		converted.setCuid(imported.getUid());
+		converted.setOriginatorIp(imported.getOrig_h());
+		converted.setResponderIp(imported.getResp_h());
+		converted.setOriginatorPort(imported.getOrig_p());
+		converted.setTimestamp(FieldTypeConverter.convertLongEpochTimestamp(imported.getTs()));
+		converted.setCuid(imported.getUid());
+		converted.setOriginatorIp(imported.getOrig_h());
+		converted.setResponderIp(imported.getResp_h());
+		converted.setOriginatorPort(imported.getOrig_p());
+		converted.setResponderPort(imported.getResp_p());
+		converted.setFunction(imported.getFunc());
+		converted.setPduType(PduType.valueOf(imported.getPdu_type().toUpperCase()));
+		converted.setUnit(imported.getUnit());
+		converted.setTransactionId(imported.getTid());
+		return converted;
+	}
+	
 	public ObservedFile convert(ImportedObservedFile imported) {
 		ObservedFile converted = new ObservedFileImpl();
 		converted.setTimestamp(FieldTypeConverter.convertLongEpochTimestamp(imported.getTs()));
 		converted.setCuid(imported.getUid());
+		// initialize connection object to null; it will get added after object creation
+		converted.setConnection(null);
 		converted.setOriginatorIp(imported.getOrig_h());
 		converted.setResponderIp(imported.getResp_h());
 		converted.setFuid(imported.getFuid());

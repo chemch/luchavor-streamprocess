@@ -14,8 +14,10 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
+import com.luchavor.datamodel.artifact.network.observation.observedservice.ObservedService;
 import com.luchavor.datamodel.artifact.test.TestArtifact;
 import com.luchavor.streamprocess.model.ImportedConnection;
+import com.luchavor.streamprocess.model.ImportedModbusEvent;
 import com.luchavor.streamprocess.model.ImportedObservedFile;
 import com.luchavor.streamprocess.model.ImportedObservedHost;
 import com.luchavor.streamprocess.model.ImportedObservedService;
@@ -23,7 +25,7 @@ import com.luchavor.streamprocess.model.ImportedSoftware;
 
 @EnableKafka
 @Configuration
-public class KafkaConfig {
+public class KafkaConsumerConfig {
 
 	@Value("${kafka-server}")
 	private String kafkaServer;
@@ -54,6 +56,30 @@ public class KafkaConfig {
 		return factory;
 	}
 	// end::testArtifact[]
+	
+	// tag::modbusEvent[]
+		@Bean
+		ConsumerFactory<String, ImportedModbusEvent> modbusEventConsumerFactory() {
+			Map<String, Object> config = new HashMap<>();
+			// set configuration settings
+			config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+			config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+			config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+			config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+			// return json format of message
+			return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(),
+					new JsonDeserializer<>(ImportedModbusEvent.class));
+		}
+
+		@Bean
+		ConcurrentKafkaListenerContainerFactory<String, ImportedModbusEvent> modbusEventListener() {
+			ConcurrentKafkaListenerContainerFactory<String, ImportedModbusEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+			// set consumer factory
+			factory.setConsumerFactory(modbusEventConsumerFactory());
+			// return factory
+			return factory;
+		}
+		// end::modbusEvent[]
 
 	// tag::observedHost[]
 	@Bean
@@ -102,6 +128,30 @@ public class KafkaConfig {
 		return factory;
 	}
 	// end::observedService[]
+	
+	// tag::serviceEnrichment[]
+		@Bean
+		ConsumerFactory<String, ObservedService> serviceEnrichmentConsumerFactory() {
+			Map<String, Object> config = new HashMap<>();
+			// set configuration settings
+			config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+			config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+			config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+			config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+			// return json format of message
+			return new DefaultKafkaConsumerFactory<>(config, new StringDeserializer(),
+					new JsonDeserializer<>(ObservedService.class));
+		}
+
+		@Bean
+		ConcurrentKafkaListenerContainerFactory<String, ObservedService> serviceEnrichmentListener() {
+			ConcurrentKafkaListenerContainerFactory<String, ObservedService> factory = new ConcurrentKafkaListenerContainerFactory<>();
+			// set consumer factory
+			factory.setConsumerFactory(serviceEnrichmentConsumerFactory());
+			// return factory
+			return factory;
+		}
+		// end::serviceEnrichment[]
 	
 	// tag::observedFile[]
 	@Bean
